@@ -68,13 +68,5 @@ jobs:
           platforms: ${{ env.PLATFORMS }}
           tags: ${{ steps.prep.outputs.tags }}
 
-      - name: Update repo description
-        if: github.event_name != 'pull_request' && env.DOCKERHUB_USERNAME != '' && env.DOCKERHUB_TOKEN != ''
-        uses: peter-evans/dockerhub-description@v4
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-          repository: ${{ env.DOCKER_IMAGE_NAME }}
-          readme-filepath: ./README.md
-          short-description: ${{ github.event.repository.description }}
+
 
