@@ -1,8 +1,4 @@
-#
-# firefox Dockerfile
-#
-# https://github.com/jlesage/docker-firefox
-#
+# Chromium Dockerfile
 
 # Build the membarrier check tool.
 FROM alpine:3.14 AS membarrier
@@ -18,73 +14,42 @@ FROM jlesage/baseimage-gui:alpine-3.20-v4.6.3
 # Docker image version is provided via build arg.
 ARG DOCKER_IMAGE_VERSION=
 
-# Define software versions.
-ARG FIREFOX_VERSION=128.0.3-r0
-#ARG PROFILE_CLEANER_VERSION=2.36
-
-# Define software download URLs.
-#ARG PROFILE_CLEANER_URL=https://github.com/graysky2/profile-cleaner/raw/v${PROFILE_CLEANER_VERSION}/common/profile-cleaner.in
-
 # Define working directory.
 WORKDIR /tmp
 
-# Install Firefox.
+# Install Chromium and dependencies
 RUN \
-#    add-pkg --repository http://dl-cdn.alpinelinux.org/alpine/edge/main \
-#            --repository http://dl-cdn.alpinelinux.org/alpine/edge/community \
-#            --upgrade firefox=${FIREFOX_VERSION}
-     add-pkg firefox=${FIREFOX_VERSION}
+    apk add --no-cache \
+    chromium \
+    chromium-chromedriver \
+    wget \
+    ca-certificates \
+    libstdc++ \
+    nss \
+    freetype \
+    harfbuzz \
+    ttf-freefont \
+    mesa-dri-gallium \
+    libpulse \
+    adwaita-icon-theme \
+    font-dejavu \
+    xdotool \
+    jq
 
-# Install extra packages.
-RUN \
-    add-pkg \
-        # WebGL support.
-        mesa-dri-gallium \
-        # Audio support.
-        libpulse \
-        # Icons used by folder/file selection window (when saving as).
-        adwaita-icon-theme \
-        # A font is needed.
-        font-dejavu \
-        # The following package is used to send key presses to the X process.
-        xdotool \
-        && \
-    # Remove unneeded icons.
-    find /usr/share/icons/Adwaita -type d -mindepth 1 -maxdepth 1 -not -name 16x16 -not -name scalable -exec rm -rf {} ';' && \
-    true
-
-# 安装必要的包
+# Install necessary packages
 RUN apk add --no-cache fontconfig wqy-zenhei
 
-# 更新字体缓存
+# Update font cache
 RUN fc-cache -fv
 
-# 设置默认语言
+# Set default language
 ENV LANG zh_CN.UTF-8
 ENV LANGUAGE zh_CN:zh
 ENV LC_ALL zh_CN.UTF-8
 
-# Install profile-cleaner.
-#RUN \
-#    add-pkg --virtual build-dependencies curl && \
-#    curl -# -L -o /usr/bin/profile-cleaner {$PROFILE_CLEANER_URL} && \
-#    sed-patch 's/@VERSION@/'${PROFILE_CLEANER_VERSION}'/' /usr/bin/profile-cleaner && \
-#    chmod +x /usr/bin/profile-cleaner && \
-#    add-pkg \
-#        bash \
-#        file \
-#        coreutils \
-#        bc \
-#        parallel \
-#        sqlite \
-#        && \
-#    # Cleanup.
-#    del-pkg build-dependencies && \
-#    rm -rf /tmp/* /tmp/.[!.]*
-
 # Generate and install favicons.
 RUN \
-    APP_ICON_URL=https://github.com/jlesage/docker-templates/raw/master/jlesage/images/firefox-icon.png && \
+    APP_ICON_URL=https://raw.githubusercontent.com/chromium/chromium/master/chrome/app/theme/chromium/product_logo_256.png && \
     install_app_icon.sh "$APP_ICON_URL"
 
 # Add files.
@@ -93,21 +58,21 @@ COPY --from=membarrier /tmp/membarrier_check /usr/bin/
 
 # Set internal environment variables.
 RUN \
-    set-cont-env APP_NAME "Firefox" && \
-    set-cont-env APP_VERSION "$FIREFOX_VERSION" && \
+    set-cont-env APP_NAME "Chromium" && \
+    set-cont-env APP_VERSION "$(chromium --version | cut -d ' ' -f 2)" && \
     set-cont-env DOCKER_IMAGE_VERSION "$DOCKER_IMAGE_VERSION" && \
     true
 
 # Set public environment variables.
 ENV \
-    FF_OPEN_URL= \
-    FF_KIOSK=0 \
-    FF_CUSTOM_ARGS=
+    CHROMIUM_OPEN_URL= \
+    CHROMIUM_KIOSK=0 \
+    CHROMIUM_CUSTOM_ARGS=
 
 # Metadata.
 LABEL \
-      org.label-schema.name="firefox" \
-      org.label-schema.description="Docker container for Firefox" \
+      org.label-schema.name="chromium" \
+      org.label-schema.description="Docker container for Chromium" \
       org.label-schema.version="${DOCKER_IMAGE_VERSION:-unknown}" \
-      org.label-schema.vcs-url="https://github.com/jlesage/docker-firefox" \
+      org.label-schema.vcs-url="https://github.com/yourusername/docker-chromium" \
       org.label-schema.schema-version="1.0"

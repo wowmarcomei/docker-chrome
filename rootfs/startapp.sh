@@ -27,7 +27,21 @@ for PID in "$PIDS"; do
 done
 set -e
 
-/usr/bin/firefox --version
-exec /usr/bin/firefox "$@" >> /config/log/firefox/output.log 2>> /config/log/firefox/error.log
+CHROME_ARGS="--no-sandbox --disable-dev-shm-usage --disable-gpu"
+
+if [ "${CHROME_KIOSK:-0}" = "1" ]; then
+    CHROME_ARGS="$CHROME_ARGS --kiosk"
+fi
+
+if [ -n "${CHROME_OPEN_URL:-}" ]; then
+    CHROME_ARGS="$CHROME_ARGS $CHROME_OPEN_URL"
+fi
+
+if [ -n "${CHROME_CUSTOM_ARGS:-}" ]; then
+    CHROME_ARGS="$CHROME_ARGS $CHROME_CUSTOM_ARGS"
+fi
+
+chromium --version
+exec chromium $CHROME_ARGS --user-data-dir=/config/chrome-user-data "$@" >> /config/log/chrome/output.log 2>> /config/log/chrome/error.log
 
 # vim:ft=sh:ts=4:sw=4:et:sts=4
