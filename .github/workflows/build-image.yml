@@ -11,7 +11,7 @@ env:
 
 on:
   push:
-    branches: '*'
+    branches: 'master'
   pull_request:
 
 jobs:
@@ -57,7 +57,7 @@ jobs:
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
-          username: ${{ github.actor }}
+          username: ${{ github.actor  }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and push
@@ -77,4 +77,3 @@ jobs:
           repository: ${{ env.DOCKER_IMAGE_NAME }}
           readme-filepath: ./README.md
           short-description: ${{ github.event.repository.description }}
-
